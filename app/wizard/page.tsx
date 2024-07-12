@@ -32,10 +32,10 @@ const page = async () => {
         <CardHeader>
           <CardTitle>Currency</CardTitle>
           <CardDescription>Set your default currency 💵</CardDescription>
+        </CardHeader>
           <CardContent>
             <CurrencyComboBox />
           </CardContent>
-        </CardHeader>
       </Card>
       <Separator />
       <Button className="w-full" asChild>
