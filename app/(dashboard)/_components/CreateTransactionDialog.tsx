@@ -96,7 +96,7 @@ export function CreateTransactionDialog({ trigger, type }: Props){
             </DialogTitle>
           </DialogHeader>
           <Form {...form}>
-            <form  onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
                 name="description"
@@ -135,7 +135,7 @@ export function CreateTransactionDialog({ trigger, type }: Props){
                   control={form.control}
                   name="category"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="flex flex-col">
                       <FormLabel>Category</FormLabel>
                       <FormControl>
                         <CategoryPicker
@@ -154,12 +154,12 @@ export function CreateTransactionDialog({ trigger, type }: Props){
                   control={form.control}
                   name="date"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="flex flex-col">
                       <FormLabel>Transaction date</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
-                            <Button 
+                            <Button
                               variant="outline"
                               className={cn(
                                 "w-[200px] pl-3 text-left font-normal",
@@ -171,15 +171,19 @@ export function CreateTransactionDialog({ trigger, type }: Props){
                               ) : (
                                 <span>Pick a date</span>
                               )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50"/>
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0">
-                          <Calendar 
+                          <Calendar
                             mode="single"
                             selected={field.value}
-                            onSelect={field.onChange}
+                            onSelect={(value) => {
+                              if(!value) return;
+                              console.log("@@CALENDAR", value)
+                              field.onChange(value)
+                            }}
                             initialFocus
                           />
                         </PopoverContent>
@@ -209,7 +213,7 @@ export function CreateTransactionDialog({ trigger, type }: Props){
               {!isPending && "Create"}
               {isPending && <Loader2 className="animate-spin" />}
             </Button>
-        </DialogFooter>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     );
