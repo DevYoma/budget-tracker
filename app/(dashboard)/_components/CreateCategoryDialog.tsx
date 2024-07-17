@@ -3,6 +3,7 @@
 type Prop = {
   type: TransactionType;
   successCallback: (category: Category) => void;
+  trigger?: React.ReactNode;
 };
 
 import { Button } from "@/components/ui/button";
@@ -35,7 +36,7 @@ import { Category } from "@prisma/client";
 import { toast } from "sonner";
 import { useTheme } from "next-themes";
 
-const CreateCategoryDialog = ({ type, successCallback }: Prop) => {
+const CreateCategoryDialog = ({ type, successCallback, trigger }: Prop) => {
   const [open, setOpen] = React.useState(false);
   const form = useForm<CreateCategorySchemaType>({
     resolver: zodResolver(CreateCategorySchema),
@@ -86,13 +87,13 @@ const CreateCategoryDialog = ({ type, successCallback }: Prop) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
+        {trigger ? (trigger) : (<Button
           variant={"ghost"}
           className="flex border-separate items-center justify-start rounded-none border-b px-3 py-3 text-muted-foreground"
         >
           <PlusSquare className="mr-2 h-4 w-4" />
           Create new
-        </Button>
+        </Button>)}
       </DialogTrigger>
 
       <DialogContent className="border border-orange-500">
