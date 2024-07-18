@@ -96,7 +96,7 @@ const CreateCategoryDialog = ({ type, successCallback, trigger }: Prop) => {
         </Button>)}
       </DialogTrigger>
 
-      <DialogContent className="border border-orange-500">
+      <DialogContent className="">
         <DialogHeader>
           <DialogTitle>
             Create
