@@ -35,12 +35,17 @@ import { cn } from '@/lib/utils';
 import { DataTableFacetedFilter } from '@/components/datatable/FacetedFilters';
 import { DataTableViewOptions } from '@/components/datatable/ColumnToggle';
 import { Button } from '@/components/ui/button';
+import { download, generateCsv, mkConfig } from "export-to-csv";
+import { DownloadIcon, MoreHorizontal, TrashIcon } from 'lucide-react';
+import { DropdownMenu, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { DropdownMenuContent } from '@radix-ui/react-dropdown-menu';
+import DeleteTransactionDialog from './DeleteTransactionDialog';
 
 const emptyData: any[] = []
 
 type TransactionHistoryRow = GetTransactionsHistoryResponseType[0];
 
-export const columns: ColumnDef<TransactionHistoryRow>[] = [
+const columns: ColumnDef<TransactionHistoryRow>[] = [
   {
     accessorKey: "category",
     header: ({ column }) => (
@@ -112,7 +117,20 @@ export const columns: ColumnDef<TransactionHistoryRow>[] = [
       </p>
     ),
   },
+  {
+    id: "actions", 
+    enableHiding: false, 
+    cell: ({ row }) => (
+        <RowActions transaction={row.original}/>
+    ),
+  }
 ];
+
+const csvConfig = mkConfig({
+    fieldSeparator: ",", 
+    decimalSeparator: ".",
+    useKeysAsHeaders: true, 
+})
 
 const TransactionTable = ({ to, from }: Props) => {
     const [sorting, setSorting] = useState<SortingState>([]);
@@ -126,6 +144,11 @@ const TransactionTable = ({ to, from }: Props) => {
           )}&to=${DateToUTCDate(to)}`
         ).then((res) => res.json()),
     });
+
+    const handleExportCSV = (data: any[]) => {
+        const csv = generateCsv(csvConfig)(data);
+        download(csvConfig)(csv);
+    }
 
     const table = useReactTable({
         data: history.data || emptyData,
@@ -187,7 +210,27 @@ const TransactionTable = ({ to, from }: Props) => {
           )}
         </div>
         <div className="flex flex-wrap gap-2">
-          <DataTableViewOptions table={table} />
+            <Button
+                variant="outline"
+                size="sm"
+                className="ml-auto h-8 lg:flex"
+                onClick={() => {
+                    const data = table.getFilteredRowModel().rows.map(row => ({
+                        category: row.original.category, 
+                        categoryIcon: row.original.categoryIcon,
+                        description: row.original.description,
+                        type: row.original.type,
+                        amount: row.original.amount,
+                        formattedAmount: row.original.formattedAmount,
+                        date: row.original.date,
+                    }));
+
+                    handleExportCSV(data) 
+                }}
+            >
+                <DownloadIcon className="mr-2 h-4 w-4" />Export CSV
+            </Button>
+            <DataTableViewOptions table={table} />
         </div>
       </div>
       <SkeletonWrapper isLoading={history.isFetching}>
@@ -265,3 +308,39 @@ const TransactionTable = ({ to, from }: Props) => {
 }   
 
 export default TransactionTable
+
+function RowActions({transaction}: {transaction: TransactionHistoryRow}){
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+    return(
+        <>
+        <DeleteTransactionDialog 
+            open={showDeleteDialog} 
+            setOpen={setShowDeleteDialog}
+            transactionId={transaction.id}
+        /> 
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild >
+                    <Button
+                        variant="ghost"
+                        className="h-8 w-8 p-0"
+                    >
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuSeparator /> 
+                    <DropdownMenuItem 
+                        onSelect={() => {setShowDeleteDialog(prev => !prev)}}
+                        className="flex items-center gap-2"
+                    >
+                        <TrashIcon className="h-4 w-4 text-muted-foreground" />
+                        Delete
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </>
+    )
+}
